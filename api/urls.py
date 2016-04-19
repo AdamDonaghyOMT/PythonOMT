@@ -1,9 +1,9 @@
 from django.conf.urls import url
 from django.contrib import admin
-from .views import unsubscribe, subscribe, heartbeat, EventList
+from .views import unsubscribe, subscribe, heartbeat
 
 urlpatterns = [
-    url(r'unsubscribe/', EventList.as_view()),
- 	url(r'subscribe/',   subscribe),
+    url(r'unsubscribe/', unsubscribe.as_view()),
+ 	url(r'subscribe/',   subscribe.as_view()),
     url(r'heartbeat/',   heartbeat),
 ]

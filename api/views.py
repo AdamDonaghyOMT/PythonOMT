@@ -1,4 +1,4 @@
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.renderers import JSONRenderer
 from rest_framework.parsers import JSONParser
@@ -25,43 +25,44 @@ class JSONResponse(HttpResponse):
 
 
 
-def unsubscribe(request):
-	print('GOT TO THE PRINT')
-	return HttpResponse(status=404)
-
-
-@csrf_exempt
-def subscribe(request):
-	print('GOT TO THE subscribe')
-	print(request)
-	if request.method == "POST":
-		data = JSONParser().parse(request.POST)
-		serializer = EventSerializer(data=request.data)
-
-		return JSONResponse(serializer.data, status=201)
-	
-	else:
-			return HttpResponse(status=404)
-
-
-
 def heartbeat(request):
 	pass
 
 
-
-class EventList(APIView):
+class unsubscribe(APIView):
     """
     List all snippets, or create a new snippet.
     """
+
     def get(self, request, format=None):
+        return JsonResponse({"Message":"get not supported at this end point"}, status=404)# is this the correct  error code?
+
+
+    def post(self, request, format=None):
+    	#Expect to get some stuff to over write a current one
+    	#Do a get over the top of this stuff 
+        serializer = EventSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class subscribe(APIView):
+    """
+    Create a new subscription
+    """
+   
+    def get(self, request, format=None):
+    	#filter to only show what that user is subscribed to
         snippets = Event.objects.all()
         serializer = EventSerializer(snippets, many=True)
         return Response(serializer.data)
 
+
     def post(self, request, format=None):
         serializer = EventSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save() #create a new instance of the event
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
