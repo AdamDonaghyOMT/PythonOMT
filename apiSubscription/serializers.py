@@ -14,5 +14,5 @@ class UserSerializer(serializers.ModelSerializer):
 class EventSerializer(serializers.ModelSerializer):
     class Meta:
         model = Event
-        fields = ('title', 'ownerUser', 'triggerPrice', 'asx_code', 'frequency')
+        fields = ('ownerEmail', 'triggerPrice', 'asx_code', 'frequency')
 

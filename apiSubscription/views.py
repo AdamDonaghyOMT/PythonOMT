@@ -27,44 +27,45 @@ def heartbeat(request):
 	pass
 
 
-@api_view(['POST'])
-def unsubscribePost(request, email=None, format=None):
-    """
-    Post: Delete an event subscription for a given user
-    """
-    data = json.loads(request.body)
-    asx_code = data['asx_code']
-
-    if email is not None and asx_code is not None:
-        unsubscribeEvent = Event.objects.get(email=email, asx_code=asx_code)
-        unsubscribe.delete()
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-@api_view(['GET'])
-def subscribeGet(request, email=None, format=None):
+@api_view(['GET', 'POST', 'DELETE'])
+def subscriptions(request, email=None, format=None):
 	#filter to only show what that user is subscribed to
     """
-        Get: All the current subscriptions of a user \n
-    """
-    if email is not None:
-        snippets = Event.objects.all()
-        serializer = EventSerializer(snippets, many=True)
-        return Response(serializer.data)
-    return Response(status=status.HTTP_400_BAD_REQUEST)
+    Endpoint to manage subscriptions 
 
-
-
-@api_view(['POST'])
-def subscribePost(request, email=None, format=None):
+    Get: All the current subscriptions of a user 
+    Post: Create a new subscription '{ "triggerPrice": float , "frequency": int , "asx_code": 3 char }' 
+    Delete: Deletes an event for a person given they've got '{"asx_code": 3 char}' 
     """
-    Post: Create a new subscription
-    """
-    serializer = EventSerializer(data=request.data)
-    if serializer.is_valid():
-        serializer.save() #create a new instance of the event
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    if email is None:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'GET':
+        owenerEvents = Event.objects.filter(ownerEmail = email)
+        serializer = EventSerializer(owenerEvents, many=True)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    if request.method == 'POST':
+        request.data['ownerEmail'] = email
+        serializer = EventSerializer(data=request.data)
+        if serializer.is_valid(): #get this for free from the event serializer
+            serializer.save() #create a new instance of the event
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'DELETE':
+        data = json.loads(request.body)
+        asx_code = data['asx_code']
+        if asx_code is not None:
+            try:
+                unsubscribeEvent = Event.objects.filter(ownerEmail=email, asx_code=asx_code)
+                unsubscribeEvent.delete() #delete first element if there are multiple     
+                return Response(status=status.HTTP_200_OK)
+            except:
+                Response(status=status.HTTP_400_BAD_REQUEST)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+    else:
+        return Response(status=status.HTTP_400_BAD_REQUEST)
 
 

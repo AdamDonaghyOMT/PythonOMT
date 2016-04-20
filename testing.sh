@@ -1,0 +1,3 @@
+curl -H "Content-Type: application/json" -X POST -d '{ "triggerPrice":10, "frequency":10, "asx_code":"xyz"}' http://localhost:8000/api/subscribe/adamdonaghy1994@gmail.com/
+curl -H "Content-Type: application/json" -X DELETE -d '{"asx_code":"xyz"}' http://localhost:8000/api/subscribe/adamdonaghy1994@gmail.com/
+curl -H "Content-Type: application/json" http://localhost:8000/api/subscribe/adamdonaghy1994@gmail.com/
