@@ -28,9 +28,7 @@ def heartbeat(request):
 
 
 @api_view(['POST'])
-def unsubscribePost(self, request, email=None, format=None):
-	#Expect to get some stuff to over write a current one
-	#Do a get over the top of this stuff
+def unsubscribePost(request, email=None, format=None):
     """
     Post: Delete an event subscription for a given user
     """
@@ -45,18 +43,21 @@ def unsubscribePost(self, request, email=None, format=None):
 
 
 @api_view(['GET'])
-def subscribeGet(self, request, format=None):
+def subscribeGet(request, email=None, format=None):
 	#filter to only show what that user is subscribed to
     """
         Get: All the current subscriptions of a user \n
     """
-    snippets = Event.objects.all()
-    serializer = EventSerializer(snippets, many=True)
-    return Response(serializer.data)
+    if email is not None:
+        snippets = Event.objects.all()
+        serializer = EventSerializer(snippets, many=True)
+        return Response(serializer.data)
+    return Response(status=status.HTTP_400_BAD_REQUEST)
+
 
 
 @api_view(['POST'])
-def subscribePost(self, request, format=None):
+def subscribePost(request, email=None, format=None):
     """
     Post: Create a new subscription
     """
