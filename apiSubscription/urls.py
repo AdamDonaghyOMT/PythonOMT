@@ -1,9 +1,10 @@
 from django.conf.urls import url
 from django.contrib import admin
-from .views import unsubscribe, subscribe, heartbeat
+from .views import subscribeGet, subscribePost, heartbeat, unsubscribePost
 
 urlpatterns = [
-    url(r'unsubscribe/', unsubscribe.as_view()),
- 	url(r'subscribe/',   subscribe.as_view()),
+    url(r'unsubscribe/(?P<email>[^/]+)', unsubscribePost),
+ 	url(r'subscribe/(?P<email>[^/]+)',   subscribePost),
+ 	url(r'subscribe/', subscribeGet),
     url(r'heartbeat/',   heartbeat),
 ]

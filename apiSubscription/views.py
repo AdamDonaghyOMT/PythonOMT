@@ -1,17 +1,15 @@
-from django.http import HttpResponse, JsonResponse
-from django.views.decorators.csrf import csrf_exempt
+import json
+
+from django.http import HttpResponse
+
+from rest_framework import status
+from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.renderers import JSONRenderer
-from rest_framework.parsers import JSONParser
+from rest_framework.response import Response
+
 from .models import Event
 from .serializers import UserSerializer, EventSerializer
-from django.views.decorators.csrf import csrf_exempt
-
-# Create your views here.
-from django.http import Http404
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-
 
 #JSON RESPONSE FOR API END POINTS
 class JSONResponse(HttpResponse):
@@ -29,43 +27,43 @@ def heartbeat(request):
 	pass
 
 
-class unsubscribe(APIView):
+@api_view(['POST'])
+def unsubscribePost(self, request, email=None, format=None):
+	#Expect to get some stuff to over write a current one
+	#Do a get over the top of this stuff
     """
-    Unsubscribe from a current subscription.
+    Post: Delete an event subscription for a given user
     """
+    data = json.loads(request.body)
+    asx_code = data['asx_code']
 
-    def post(self, request, format=None):
-    	#Expect to get some stuff to over write a current one
-    	#Do a get over the top of this stuff 
-        serializer = EventSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class subscribe(APIView):
-    
-    """
-    Get all the current subscriptions of a user
-    """
-    def get(self, request, format=None):
-    	#filter to only show what that user is subscribed to
-        snippets = Event.objects.all()
-        serializer = EventSerializer(snippets, many=True)
-        return Response(serializer.data)
-    
-    """
-    Create a new subscription
-    """
-    def post(self, request, format=None):
-        serializer = EventSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save() #create a new instance of the event
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    if email is not None and asx_code is not None:
+        unsubscribeEvent = Event.objects.get(email=email, asx_code=asx_code)
+        unsubscribe.delete()
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@api_view(['GET'])
+def subscribeGet(self, request, format=None):
+	#filter to only show what that user is subscribed to
+    """
+        Get: All the current subscriptions of a user \n
+    """
+    snippets = Event.objects.all()
+    serializer = EventSerializer(snippets, many=True)
+    return Response(serializer.data)
 
+
+@api_view(['POST'])
+def subscribePost(self, request, format=None):
+    """
+    Post: Create a new subscription
+    """
+    serializer = EventSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save() #create a new instance of the event
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
