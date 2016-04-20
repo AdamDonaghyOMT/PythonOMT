@@ -31,12 +31,8 @@ def heartbeat(request):
 
 class unsubscribe(APIView):
     """
-    List all snippets, or create a new snippet.
+    Unsubscribe from a current subscription.
     """
-
-    def get(self, request, format=None):
-        return JsonResponse({"Message":"get not supported at this end point"}, status=404)# is this the correct  error code?
-
 
     def post(self, request, format=None):
     	#Expect to get some stuff to over write a current one
@@ -49,20 +45,27 @@ class unsubscribe(APIView):
 
 
 class subscribe(APIView):
+    
     """
-    Create a new subscription
+    Get all the current subscriptions of a user
     """
-   
     def get(self, request, format=None):
     	#filter to only show what that user is subscribed to
         snippets = Event.objects.all()
         serializer = EventSerializer(snippets, many=True)
         return Response(serializer.data)
-
-
+    
+    """
+    Create a new subscription
+    """
     def post(self, request, format=None):
         serializer = EventSerializer(data=request.data)
         if serializer.is_valid():
             serializer.save() #create a new instance of the event
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+

@@ -18,5 +18,6 @@ from django.contrib import admin
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
+    url(r'', include('rest_framework_swagger.urls')),
     url(r'^api/', include('apiSubscription.urls')),
 ]
